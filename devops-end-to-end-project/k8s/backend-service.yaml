@@ -1,0 +1,13 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend # Selects Pods with this label
+  ports:
+    - protocol: TCP
+      port: 5000      # Port the Service will listen on (inside the cluster)
+      targetPort: 5000 # Port on the Pod that the Service will forward to
+  type: ClusterIP      # Only accessible from within the cluster
+
