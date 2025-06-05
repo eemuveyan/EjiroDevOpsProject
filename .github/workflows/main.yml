@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ AKIAXGW37NRCSNHPLEMY }}
+          aws-secret-access-key: ${{ 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 }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push backend Docker image
+        run: |
+          docker build -t backend ./microservices-app/backend
+          docker tag backend:495456316485.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+          docker push 495456316485.dkr.ecr.us-east-1.amazonaws.com/backend/backend:latest
+
+      - name: Build, tag, and push frontend Docker image
+        run: |
+          docker build -t frontend ./microservices-app/frontend
+          docker tag frontend:495456316485.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+          docker push 495456316485.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name devops-cluster
+
+      - name: Deploy backend to EKS
+        run: |
+          kubectl apply -f k8s/backend-deployment.yaml
+	  kubectl apply -f k8s/backend-service.yaml
+
+      - name: Deploy frontend to EKS
+        run: |
+          kubectl apply -f k8s/frontend-deployment.yaml
+          kubectl apply -f k8s/frontend-service.yaml	
+	env:
+	  KUBECONFIG: ~/.kube/config
+
+
+
+
