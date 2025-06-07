@@ -16,46 +16,31 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          # CORRECT: Reference GitHub Secrets here
-          aws-access-key-id: AKIAXGW37NRCSNHPLEMY
-          aws-secret-access-key: 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
+          
+          aws-access-key-id: 
+          aws-secret-access-key: 
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
-        # This action automatically performs docker login for ECR
+        
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push backend Docker image
         run: |
-          # Assuming repo root is 'microservices-app' and backend/ is inside it.
-          # If backend/ is directly in the repo root, remove 'microservices-app/'
+          
           docker build -t backend ./backend 
-          # CORRECT: docker tag SOURCE_IMAGE TARGET_IMAGE_URI[:TAG]
           docker tag backend 495456316485.dkr.ecr.us-east-1.amazonaws.com/backend:latest
-          # CORRECT: docker push TARGET_IMAGE_URI[:TAG] (removed extra /backend)
           docker push 495456316485.dkr.ecr.us-east-1.amazonaws.com/backend:latest
 
       - name: Build, tag, and push frontend Docker image
         run: |
-          # Assuming repo root is 'microservices-app' and frontend/ is inside it.
-          # If frontend/ is directly in the repo root, remove 'microservices-app/'
           docker build -t frontend ./frontend
-          # CORRECT: docker tag SOURCE_IMAGE TARGET_IMAGE_URI[:TAG]
           docker tag frontend 495456316485.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
-          # CORRECT: docker push TARGET_IMAGE_URI[:TAG]
           docker push 495456316485.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
 
-      - name: Configure kubectl for EKS Access # Renamed for clarity
-        # This step will typically handle kubectl installation if not present,
-        # and then configure it to talk to your EKS cluster.
-        # azure/setup-kubectl is not ideal for EKS.
-        # Rely on 'aws eks update-kubeconfig' if AWS CLI is installed (which it is by aws-actions/configure-aws-credentials)
+      - name: Configure kubectl for EKS Access 
         run: |
-          # AWS CLI typically installs kubectl binary.
-          # If not, you might need a separate kubectl setup action like:
-          # uses: kubernetes-action/setup-kubectl@master (for general K8s)
-          # However, for EKS, 'aws eks update-kubeconfig' is often enough.
           aws eks update-kubeconfig --region us-east-1 --name devops-cluster
 
       - name: Deploy backend to EKS
